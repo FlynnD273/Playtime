@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
+    kotlin("plugin.serialization") version "2.3.10"
 }
 
 kotlin {
@@ -15,15 +16,32 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     jvm()
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
+            // Persistent data
+            implementation(libs.exposed.core)
+            implementation(libs.r2dbc.h2)
+            implementation(libs.exposed.r2dbc)
+            implementation(libs.exposed.dao)
+            implementation(libs.ktoml.core)
+            implementation(libs.ktoml.file)
+
+            // Logging
+            implementation(libs.kotlin.logging.jvm)
+            implementation(libs.logback.classic)
+
+            // File I/O
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs.compose)
+
+            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -39,16 +57,17 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.jaudiotagger)
         }
     }
 }
 
 android {
-    namespace = "com.flynn.playtime"
+    namespace = "com.flynnd273.playtime"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.flynn.playtime"
+        applicationId = "com.flynnd273.playtime"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -76,11 +95,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "com.flynn.playtime.MainKt"
+        mainClass = "com.flynnd273.playtime.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.flynn.playtime"
+            packageName = "com.flynnd273.playtime"
             packageVersion = "1.0.0"
         }
     }
