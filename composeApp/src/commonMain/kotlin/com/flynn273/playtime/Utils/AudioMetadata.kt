@@ -11,6 +11,7 @@ data class AudioMetadata(
     val discTotal: Int,
     val releaseYear: Int,
     val trackNum: Int,
+    val file: PlatformFile
 ) {
 
     override fun toString(): String {
@@ -31,6 +32,7 @@ data class AudioMetadata(
         if (album != other.album) return false
         if (track != other.track) return false
         if (!albumArt.contentEquals(other.albumArt)) return false
+        if (file != other.file) return false
 
         return true
     }
@@ -44,6 +46,7 @@ data class AudioMetadata(
         result = 31 * result + album.hashCode()
         result = 31 * result + track.hashCode()
         result = 31 * result + albumArt.contentHashCode()
+        result = 31 * result + file.hashCode()
         return result
     }
 }
