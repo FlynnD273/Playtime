@@ -6,7 +6,7 @@ import java.text.Normalizer
 expect fun getConfigFile(): PlatformFile
 
 fun getIndexDb(): PlatformFile {
-    val file = FileKit.databasesDir / "index.db"
+    val file = FileKit.databasesDir / "index"
     val parent = file.parent()!!
     if (!parent.exists()) {
         parent.createDirectories()
@@ -33,7 +33,7 @@ fun getLibraryStateFile(): PlatformFile {
 
 fun getImagePathName(meta: AudioMetadata): String {
     return Normalizer.normalize("${meta.artist}.${meta.album}.jpg", Normalizer.Form.NFD)
-        .replace(Regex("""[~*:"!?&\\/]"""), "")
+        .replace(Regex("""[#~*:"!?&\\/]"""), "")
         .replace(Regex("""\p{InCombiningDiacriticalMarks}+"""), "")
         .replace(Regex("""[^\p{ASCII}]"""), "")
 }

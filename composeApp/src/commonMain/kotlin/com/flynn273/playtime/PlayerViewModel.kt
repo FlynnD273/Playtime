@@ -8,8 +8,12 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.path
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 private val logger = KotlinLogging.logger {}
@@ -20,9 +24,7 @@ class PlayerViewModel() : ViewModel() {
 
     init {
         viewModelScope.launch {
-            config.settings
-                .map { it.searchPaths }
-                .distinctUntilChanged()
+            config.searchPaths
                 .collectLatest { paths ->
                     library.indexLibrary(paths)
                 }
@@ -41,6 +43,9 @@ class PlayerViewModel() : ViewModel() {
                 dialogSettings = dialogSettings
             )
             logger.debug { file?.path ?: "No file selected!" }
+            if (file?.exists() ?: false) {
+                config.setSearchPaths(listOf(file))
+            }
             _isPickingFolder.update { false }
         }
     }

@@ -6,10 +6,7 @@ import com.flynn273.playtime.Utils.getConfigFile
 import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.io.asInputStream
 import kotlinx.io.buffered
@@ -19,12 +16,17 @@ import kotlinx.serialization.encodeToString
 @OptIn(FlowPreview::class)
 class Config(scope: CoroutineScope) {
     private val configPath = getConfigFile()
-    private val _settings = MutableStateFlow(loadConfig())
-    val settings = _settings.asStateFlow()
+    private val _state = MutableStateFlow(loadConfig())
+    val state = _state.asStateFlow()
+    val searchPaths = state.map { it.searchPaths }.distinctUntilChanged()
+
+    fun setSearchPaths(value: List<PlatformFile>) {
+        _state.update { it.copy(searchPaths = value) }
+    }
 
     init {
         scope.launch {
-            _settings
+            _state
                 .debounce(500)
                 .collectLatest { saveConfig(it) }
         }

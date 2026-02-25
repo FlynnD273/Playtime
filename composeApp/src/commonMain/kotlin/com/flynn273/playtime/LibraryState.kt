@@ -20,6 +20,16 @@ class LibraryState(scope: CoroutineScope) {
     private val libraryStateFile = getLibraryStateFile()
     private val _state = MutableStateFlow(loadState())
     val state = _state.asStateFlow()
+    val libraryHash = state.map { it.libraryHash }.distinctUntilChanged()
+    val playlistHash = state.map { it.playlistHash }.distinctUntilChanged()
+
+    fun setLibraryHash(value: String) {
+        _state.update { it.copy(libraryHash = value) }
+    }
+
+    fun setPlaylistHash(value: String) {
+        _state.update { it.copy(playlistHash = value) }
+    }
 
     fun updateState(newState: LibraryStateObject) {
         _state.update { newState }
@@ -35,7 +45,7 @@ class LibraryState(scope: CoroutineScope) {
 
     private fun loadState(): LibraryStateObject {
         if (!libraryStateFile.exists()) {
-            return LibraryStateObject("")
+            return LibraryStateObject()
         }
         val source = libraryStateFile.source().buffered()
         source.use { bufferedSource ->
@@ -49,5 +59,5 @@ class LibraryState(scope: CoroutineScope) {
 }
 
 @Serializable
-data class LibraryStateObject(val libraryHash: String) {
+data class LibraryStateObject(val libraryHash: String = "", val playlistHash: String = "") {
 }

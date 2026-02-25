@@ -27,11 +27,20 @@ kotlin {
         commonMain.dependencies {
             // Persistent data
             implementation(libs.exposed.core)
-            implementation(libs.r2dbc.h2)
-            implementation(libs.exposed.r2dbc)
             implementation(libs.exposed.dao)
+            implementation(libs.exposed.jdbc)
+            implementation(libs.exposed.kotlin.datetime)
+            implementation(libs.kotlinx.coroutines.reactor)
+            implementation(libs.reactor.kotlin.extensions)
+            implementation(libs.r2dbc.h2)
             implementation(libs.ktoml.core)
             implementation(libs.ktoml.file)
+
+            // UI
+            implementation(libs.coil.compose)
+
+            // Resources
+            implementation(libs.compose.components.resources)
 
             // Logging
             implementation(libs.kotlin.logging.jvm)
