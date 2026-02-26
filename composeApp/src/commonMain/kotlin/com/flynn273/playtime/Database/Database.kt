@@ -20,6 +20,7 @@ object Albums : IntIdTable("albums") {
     val discTotal = integer("disc_total")
     val artPath = varchar("artPath", 512)
     val artist = reference("artist", Artists.id)
+    val artistName = varchar("artist_name", 512)
     val lastPlayed = datetime("last_played")
 
     init {
@@ -32,6 +33,8 @@ object Tracks : IntIdTable("tracks") {
     val artPath = varchar("art_path", 512)
     val filePath = varchar("file_path", 512)
     val album = reference("album", Albums.id)
+    val albumName = varchar("album_name", 512)
+    val artistName = varchar("artist_name", 512)
     val lastPlayed = datetime("last_played")
 }
 
@@ -70,22 +73,10 @@ class Album(id: EntityID<Int>) : IntEntity(id) {
     var discTotal by Albums.discTotal
     var artPath by Albums.artPath
     var artist by Artist referencedOn Albums.artist
+    var artistName by Albums.artistName
     var lastPlayed by Albums.lastPlayed
     override fun toString(): String {
         return "Album($name by $artist)"
-    }
-}
-
-data class StaticAlbum(
-    val name: String,
-    val disc: Int,
-    val discTotal: Int,
-    val artPath: String,
-    val artist: StaticArtist,
-    val lastPlayed: LocalDateTime
-) {
-    override fun toString(): String {
-        return "Album($name by ${artist.name})"
     }
 }
 
@@ -96,21 +87,11 @@ class Track(id: EntityID<Int>) : IntEntity(id) {
     var artPath by Tracks.artPath
     var filePath by Tracks.filePath
     var album by Album referencedOn Tracks.album
+    var albumName by Tracks.albumName
+    var artistName by Tracks.artistName
     var lastPlayed by Tracks.lastPlayed
     override fun toString(): String {
         return "Track($name in $album)"
-    }
-}
-
-data class StaticTrack(
-    val name: String,
-    val artPath: String,
-    val filePath: String,
-    val album: StaticAlbum,
-    val lastPlayed: LocalDateTime
-) {
-    override fun toString(): String {
-        return "Track($name in ${album.name} by ${album.artist.name})"
     }
 }
 

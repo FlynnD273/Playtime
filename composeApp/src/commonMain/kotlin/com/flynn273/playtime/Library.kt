@@ -24,6 +24,10 @@ private val logger = KotlinLogging.logger {}
 class Library(val scope: CoroutineScope) {
     private val _tracks = MutableStateFlow<List<Track>>(emptyList())
     val tracks: StateFlow<List<Track>> = _tracks
+    private val _albums = MutableStateFlow<List<Album>>(emptyList())
+    val albums: StateFlow<List<Album>> = _albums
+    private val _artists = MutableStateFlow<List<Artist>>(emptyList())
+    val artists: StateFlow<List<Artist>> = _artists
     val supportedExtensions = setOf("mp3", "m4a", "m4p", "ogg", "vorbis", "flac", "wav", "aif", "dsf", "wma")
     val imageExtensions = setOf("jpg", "jpeg", "png")
     val libraryDb = Database.connect("jdbc:h2:file://" + getIndexDb().path)
@@ -34,10 +38,12 @@ class Library(val scope: CoroutineScope) {
         scope.launch { initDb() }
     }
 
-    fun refreshTracks() {
+    fun refreshAll() {
         scope.launch {
             suspendTransaction {
                 _tracks.value = Track.all().sortedByDescending { it.lastPlayed }
+                _albums.value = Album.all().sortedByDescending { it.lastPlayed }
+                _artists.value = Artist.all().sortedByDescending { it.lastPlayed }
             }
         }
     }
@@ -80,7 +86,7 @@ class Library(val scope: CoroutineScope) {
                 }
             }
         }
-        refreshTracks()
+        refreshAll()
         logger.debug { "Finished indexing!" }
     }
 
@@ -107,6 +113,7 @@ class Library(val scope: CoroutineScope) {
                             discTotal = metadata.discTotal
                             artPath = coverImage.path
                             artist = artistRow
+                            artistName = artistRow.name
                             lastPlayed = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                         }
                 try {
@@ -115,6 +122,8 @@ class Library(val scope: CoroutineScope) {
                         artPath = coverImage.path
                         filePath = file.path
                         album = albumRow
+                        albumName = albumRow.name
+                        artistName = artistRow.name
                         lastPlayed = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                     }
                 } catch (e: ExposedSQLException) {
@@ -126,8 +135,8 @@ class Library(val scope: CoroutineScope) {
 
     private fun cacheCoverImage(metadata: AudioMetadata): PlatformFile {
         var albumArtFile = albumArtCache / getImagePathName(metadata)
-        var hasArt = false
-        if (!albumArtFile.exists()) {
+        var hasArt = albumArtFile.exists()
+        if (!hasArt) {
             if (metadata.coverArt.isNotEmpty()) {
                 hasArt = true
                 scope.launch { albumArtFile.write(metadata.coverArt) }

@@ -7,16 +7,17 @@ import androidx.compose.runtime.Composable
 
 @Composable
 actual fun AppTheme(
-	darkTheme: Boolean,
-	content: @Composable (() -> Unit)
+    darkTheme: Boolean,
+    content: @Composable (() -> Unit)
 ) {
-	val colorScheme = when {
-		darkTheme -> darkColorScheme()
-		else -> lightColorScheme()
-	}
+    val colorScheme = when {
+        darkTheme -> darkColorScheme()
+        else -> lightColorScheme()
+    }
 
-	MaterialTheme(
-		colorScheme = colorScheme,
-		content = content
-	)
+    MaterialTheme(
+        colorScheme = colorScheme
+    ) {
+        InjectStyling { content() }
+    }
 }

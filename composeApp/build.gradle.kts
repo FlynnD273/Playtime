@@ -38,6 +38,8 @@ kotlin {
 
             // UI
             implementation(libs.coil.compose)
+            implementation(libs.navigation.compose)
+            implementation(libs.material.icons.extended)
 
             // Resources
             implementation(libs.compose.components.resources)

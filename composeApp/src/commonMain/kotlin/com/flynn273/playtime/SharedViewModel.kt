@@ -10,15 +10,17 @@ import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.path
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private val logger = KotlinLogging.logger {}
 
-class PlayerViewModel() : ViewModel() {
+class SharedViewModel() : ViewModel() {
     val config = Config(viewModelScope)
     val library = Library(viewModelScope)
 
@@ -26,7 +28,9 @@ class PlayerViewModel() : ViewModel() {
         viewModelScope.launch {
             config.searchPaths
                 .collectLatest { paths ->
-                    library.indexLibrary(paths)
+                    withContext(Dispatchers.IO) {
+                        library.indexLibrary(paths)
+                    }
                 }
         }
     }
