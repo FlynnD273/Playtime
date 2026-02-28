@@ -2,7 +2,7 @@ package com.flynn273.playtime
 
 import com.flynn273.playtime.Database.*
 import com.flynn273.playtime.Utils.*
-import io.github.oshai.kotlinlogging.KotlinLogging
+import com.flynnd273.playtime.logger
 import io.github.vinceglb.filekit.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,18 +19,27 @@ import playtime.composeapp.generated.resources.Res
 import java.security.MessageDigest
 import kotlin.time.Clock
 
-private val logger = KotlinLogging.logger {}
+private const val TOP = 20
 
 class Library(val scope: CoroutineScope) {
+    private val _topTracks = MutableStateFlow<List<Track>>(emptyList())
+    val topTracks: StateFlow<List<Track>> = _topTracks
+    private val _topAlbums = MutableStateFlow<List<Album>>(emptyList())
+    val topAlbums: StateFlow<List<Album>> = _topAlbums
+    private val _topArtists = MutableStateFlow<List<Artist>>(emptyList())
+    val topArtists: StateFlow<List<Artist>> = _topArtists
+
     private val _tracks = MutableStateFlow<List<Track>>(emptyList())
     val tracks: StateFlow<List<Track>> = _tracks
     private val _albums = MutableStateFlow<List<Album>>(emptyList())
     val albums: StateFlow<List<Album>> = _albums
     private val _artists = MutableStateFlow<List<Artist>>(emptyList())
     val artists: StateFlow<List<Artist>> = _artists
+
+
     val supportedExtensions = setOf("mp3", "m4a", "m4p", "ogg", "vorbis", "flac", "wav", "aif", "dsf", "wma")
     val imageExtensions = setOf("jpg", "jpeg", "png")
-    val libraryDb = Database.connect("jdbc:h2:file://" + getIndexDb().path)
+    val libraryDb = Database.connect("jdbc:h2:file://" + getIndexDb().path + ";IGNORECASE=TRUE")
     val albumArtCache = getImageCache()
     val libraryState = LibraryState(scope)
 
@@ -41,9 +50,13 @@ class Library(val scope: CoroutineScope) {
     fun refreshAll() {
         scope.launch {
             suspendTransaction {
-                _tracks.value = Track.all().sortedByDescending { it.lastPlayed }
-                _albums.value = Album.all().sortedByDescending { it.lastPlayed }
-                _artists.value = Artist.all().sortedByDescending { it.lastPlayed }
+                _topTracks.value = Track.all().sortedByDescending { it.lastPlayed }.take(TOP)
+                _topAlbums.value = Album.all().sortedByDescending { it.lastPlayed }.take(TOP)
+                _topArtists.value = Artist.all().sortedByDescending { it.lastPlayed }.take(TOP)
+
+                _tracks.value = Track.all().sortedBy { it.name }
+                _albums.value = Album.all().sortedBy { it.name }
+                _artists.value = Artist.all().sortedBy { it.name }
             }
         }
     }
@@ -103,6 +116,7 @@ class Library(val scope: CoroutineScope) {
 
                 val artistRow = Artist.find { Artists.name eq metadata.artist }.firstOrNull() ?: Artist.new {
                     name = metadata.artist
+                    artPath = coverImage.path
                     lastPlayed = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                 }
                 val albumRow =

@@ -27,3 +27,8 @@ actual fun AppTheme(
         InjectStyling { content() }
     }
 }
+
+@Composable
+actual fun InjectStyling(content: @Composable () -> Unit) {
+    content()
+}

@@ -8,8 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
-import com.flynn273.playtime.AppNavController
-import com.flynn273.playtime.Destination
+import com.flynn273.playtime.Navigation.AppNavController
+import com.flynn273.playtime.Navigation.Destination
 import com.flynnd273.playtime.AppTheme.AppTheme
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 

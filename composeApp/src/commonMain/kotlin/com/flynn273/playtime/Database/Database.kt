@@ -8,9 +8,11 @@ import org.jetbrains.exposed.v1.dao.IntEntityClass
 import org.jetbrains.exposed.v1.datetime.datetime
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.migration.jdbc.MigrationUtils
 
 object Artists : IntIdTable("artists") {
     val name = varchar("name", 512).uniqueIndex()
+    val artPath = varchar("artPath", 512)
     val lastPlayed = datetime("last_played")
 }
 
@@ -21,6 +23,7 @@ object Albums : IntIdTable("albums") {
     val artPath = varchar("artPath", 512)
     val artist = reference("artist", Artists.id)
     val artistName = varchar("artist_name", 512)
+
     val lastPlayed = datetime("last_played")
 
     init {
@@ -35,6 +38,7 @@ object Tracks : IntIdTable("tracks") {
     val album = reference("album", Albums.id)
     val albumName = varchar("album_name", 512)
     val artistName = varchar("artist_name", 512)
+
     val lastPlayed = datetime("last_played")
 }
 
@@ -59,6 +63,7 @@ class Artist(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Artist>(Artists)
 
     var name by Artists.name
+    var artPath by Artists.artPath
     var lastPlayed by Artists.lastPlayed
     override fun toString(): String {
         return "Artist($name)"
@@ -118,10 +123,22 @@ class PlaylistTrack(id: EntityID<Int>) : IntEntity(id) {
 
 fun initDb() {
     transaction {
-        SchemaUtils.create(Artists)
-        SchemaUtils.create(Albums)
-        SchemaUtils.create(Tracks)
-        SchemaUtils.create(Playlists)
-        SchemaUtils.create(PlaylistTracks)
+        try {
+            try {
+                SchemaUtils.create(Artists, Albums, Tracks, Playlists, PlaylistTracks)
+            } catch (e: Exception) {
+                MigrationUtils.statementsRequiredForDatabaseMigration(
+                    Artists,
+                    Albums,
+                    Tracks,
+                    Playlists,
+                    PlaylistTracks
+                )
+                    .forEach {
+                        exec(it)
+                    }
+            }
+        } catch (e: Exception) {
+        }
     }
 }

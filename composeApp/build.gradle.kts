@@ -30,8 +30,8 @@ kotlin {
             implementation(libs.exposed.dao)
             implementation(libs.exposed.jdbc)
             implementation(libs.exposed.kotlin.datetime)
-            implementation(libs.kotlinx.coroutines.reactor)
-            implementation(libs.reactor.kotlin.extensions)
+            implementation(libs.jetbrains.exposed.migration.core)
+            implementation(libs.exposed.migration.jdbc)
             implementation(libs.r2dbc.h2)
             implementation(libs.ktoml.core)
             implementation(libs.ktoml.file)
@@ -40,6 +40,7 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.navigation.compose)
             implementation(libs.material.icons.extended)
+            implementation(libs.squircle.shape)
 
             // Resources
             implementation(libs.compose.components.resources)
@@ -87,6 +88,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "/META-INF/CHANGELOG"
         }
     }
     buildTypes {

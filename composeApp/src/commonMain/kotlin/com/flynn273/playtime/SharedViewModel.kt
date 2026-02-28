@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private val logger = KotlinLogging.logger {}
+val logger = KotlinLogging.logger {}
 
 class SharedViewModel() : ViewModel() {
     val config = Config(viewModelScope)
