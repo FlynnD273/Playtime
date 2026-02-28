@@ -25,8 +25,7 @@ fun AllTracksScreen(
         val tracks by viewModel.library.tracks.collectAsState()
         val scrollState = rememberLazyListState()
         LazyColumn(
-            modifier = Modifier,
-            scrollState,
+            state = scrollState,
         ) {
             items(tracks) {
                 TrackItem(it, nc)

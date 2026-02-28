@@ -21,6 +21,8 @@ import kotlin.time.Clock
 
 private const val TOP = 20
 
+data class AlbumResult(val artist: Artist, val album: Album, val tracks: List<Track>)
+
 class Library(val scope: CoroutineScope) {
     private val _topTracks = MutableStateFlow<List<Track>>(emptyList())
     val topTracks: StateFlow<List<Track>> = _topTracks
@@ -61,6 +63,23 @@ class Library(val scope: CoroutineScope) {
         }
     }
 
+    suspend fun getAlbum(albumId: Int): AlbumResult? {
+        var artist: Artist? = null
+        var album: Album? = null
+        var tracks: List<Track> = emptyList()
+        suspendTransaction {
+            album = Album.findById(albumId)
+            if (album != null) {
+                artist = album!!.artist
+                tracks = Track.find { Tracks.album eq albumId }.sortedBy { it.number }
+            }
+        }
+        if (artist != null) {
+            return AlbumResult(artist, album!!, tracks)
+        }
+        return null
+    }
+
     fun hashLibrary(paths: List<PlatformFile>): String {
         logger.debug { "Hashing library... $paths" }
         val digest = MessageDigest.getInstance("SHA-256")
@@ -91,6 +110,7 @@ class Library(val scope: CoroutineScope) {
             libraryState.setLibraryHash(hash)
             coroutineScope { albumArtCache.list().map { async { it.delete() } }.awaitAll() }
             suspendTransaction {
+                // TODO: Don't delete everything lol
                 Tracks.deleteAll()
                 Albums.deleteAll()
                 Artists.deleteAll()
@@ -136,6 +156,7 @@ class Library(val scope: CoroutineScope) {
                         artPath = coverImage.path
                         filePath = file.path
                         album = albumRow
+                        number = metadata.trackNum
                         albumName = albumRow.name
                         artistName = artistRow.name
                         lastPlayed = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())

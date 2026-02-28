@@ -9,6 +9,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import com.flynn273.playtime.Screens.*
 import com.flynnd273.playtime.SharedViewModel
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class TrackRoute(val id: Int)
+
+@Serializable
+data class AlbumRoute(val id: Int)
+
+@Serializable
+data class ArtistRoute(val id: Int)
+
+@Serializable
+data class PlaylistRoute(val id: Int)
 
 enum class Destination(
     val route: String,

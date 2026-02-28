@@ -6,9 +6,6 @@ import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
 import org.jetbrains.exposed.v1.dao.IntEntity
 import org.jetbrains.exposed.v1.dao.IntEntityClass
 import org.jetbrains.exposed.v1.datetime.datetime
-import org.jetbrains.exposed.v1.jdbc.SchemaUtils
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.jetbrains.exposed.v1.migration.jdbc.MigrationUtils
 
 object Artists : IntIdTable("artists") {
     val name = varchar("name", 512).uniqueIndex()
@@ -38,12 +35,13 @@ object Tracks : IntIdTable("tracks") {
     val album = reference("album", Albums.id)
     val albumName = varchar("album_name", 512)
     val artistName = varchar("artist_name", 512)
+    val number = integer("number")
 
     val lastPlayed = datetime("last_played")
 }
 
 object Playlists : IntIdTable("playlists") {
-    val name = varchar("name", 128).index()
+    val name = varchar("name", 128).uniqueIndex()
     val path = varchar("path", 512).uniqueIndex()
     val lastPlayed = datetime("last_played")
 }
@@ -95,6 +93,7 @@ class Track(id: EntityID<Int>) : IntEntity(id) {
     var albumName by Tracks.albumName
     var artistName by Tracks.artistName
     var lastPlayed by Tracks.lastPlayed
+    var number by Tracks.number
     override fun toString(): String {
         return "Track($name in $album)"
     }
@@ -122,23 +121,16 @@ class PlaylistTrack(id: EntityID<Int>) : IntEntity(id) {
 }
 
 fun initDb() {
-    transaction {
-        try {
-            try {
-                SchemaUtils.create(Artists, Albums, Tracks, Playlists, PlaylistTracks)
-            } catch (e: Exception) {
-                MigrationUtils.statementsRequiredForDatabaseMigration(
-                    Artists,
-                    Albums,
-                    Tracks,
-                    Playlists,
-                    PlaylistTracks
-                )
-                    .forEach {
-                        exec(it)
-                    }
-            }
-        } catch (e: Exception) {
-        }
-    }
+//    transaction {
+//        MigrationUtils.statementsRequiredForDatabaseMigration(
+//            Artists,
+//            Albums,
+//            Tracks,
+//            Playlists,
+//            PlaylistTracks
+//        )
+//            .forEach {
+//                exec(it)
+//            }
+//    }
 }

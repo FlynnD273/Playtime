@@ -1,5 +1,6 @@
 package com.flynn273.playtime.UiComponents
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -13,12 +14,17 @@ import androidx.compose.ui.unit.em
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.flynn273.playtime.Database.Album
+import com.flynn273.playtime.Navigation.AlbumRoute
 import com.flynn273.playtime.Padding
 import com.flynn273.playtime.Sizes
 
 @Composable
 fun AlbumCard(album: Album, nc: NavHostController) {
-    Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding)) {
+    Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding).clickable(onClick = {
+        nc.navigate(
+            AlbumRoute(album.id.value)
+        )
+    })) {
         AsyncImage(
             model = album.artPath,
             contentDescription = album.name,

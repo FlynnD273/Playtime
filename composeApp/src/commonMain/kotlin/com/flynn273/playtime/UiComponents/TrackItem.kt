@@ -16,17 +16,21 @@ import com.flynn273.playtime.Padding
 import com.flynn273.playtime.Sizes
 
 @Composable
-fun TrackItem(track: Track, nc: NavHostController) {
+fun TrackItem(track: Track, nc: NavHostController, showImage: Boolean = true) {
     ListItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Padding.LargePadding, vertical = Padding.MediumPadding),
         leadingContent = {
-            AsyncImage(
-                model = track.artPath,
-                contentDescription = null,
-                modifier = Modifier.width(Sizes.SmallImage).aspectRatio(1f)
-            )
+            if (showImage) {
+                AsyncImage(
+                    model = track.artPath,
+                    contentDescription = null,
+                    modifier = Modifier.width(Sizes.SmallImage).aspectRatio(1f)
+                )
+            } else {
+                Text("${track.number}.")
+            }
         },
         headlineContent = { Text(track.name) },
         supportingContent = { Text(track.artistName) }

@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
+import com.flynn273.playtime.Screens.AlbumScreen
 import com.flynnd273.playtime.SharedViewModel
 
 val ENTER_TRANS = fadeIn(animationSpec = tween(200))
@@ -32,6 +34,10 @@ fun AppNavController(
             composable(destination.route) {
                 destination.screen(viewModel, navController)()
             }
+        }
+        composable<AlbumRoute> {
+            val route: AlbumRoute = it.toRoute()
+            AlbumScreen(viewModel, navController, route.id)
         }
     }
 }
