@@ -6,20 +6,19 @@ import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
 import org.jetbrains.exposed.v1.dao.IntEntity
 import org.jetbrains.exposed.v1.dao.IntEntityClass
 import org.jetbrains.exposed.v1.datetime.datetime
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 
 object Artists : IntIdTable("artists") {
-    val name = varchar("name", 512).uniqueIndex()
-    val artPath = varchar("artPath", 512)
+    val name = varchar("name", 1024).uniqueIndex()
+    val artPath = varchar("artPath", 1024)
     val lastPlayed = datetime("last_played")
 }
 
 object Albums : IntIdTable("albums") {
-    val name = varchar("name", 512).index()
-    val disc = integer("disc")
-    val discTotal = integer("disc_total")
-    val artPath = varchar("artPath", 512)
+    val name = varchar("name", 1024).index()
+    val artPath = varchar("artPath", 1024)
     val artist = reference("artist", Artists.id)
-    val artistName = varchar("artist_name", 512)
+    val artistName = varchar("artist_name", 1024)
 
     val lastPlayed = datetime("last_played")
 
@@ -29,20 +28,21 @@ object Albums : IntIdTable("albums") {
 }
 
 object Tracks : IntIdTable("tracks") {
-    val name = varchar("name", 512).index()
-    val artPath = varchar("art_path", 512)
-    val filePath = varchar("file_path", 512)
+    val name = varchar("name", 1024).index()
+    val artPath = varchar("art_path", 1024)
+    val filePath = varchar("file_path", 1024)
     val album = reference("album", Albums.id)
-    val albumName = varchar("album_name", 512)
-    val artistName = varchar("artist_name", 512)
+    val albumName = varchar("album_name", 1024)
+    val artistName = varchar("artist_name", 1024)
     val number = integer("number")
+    val discNumber = integer("disc_number")
 
     val lastPlayed = datetime("last_played")
 }
 
 object Playlists : IntIdTable("playlists") {
     val name = varchar("name", 128).uniqueIndex()
-    val path = varchar("path", 512).uniqueIndex()
+    val path = varchar("path", 1024).uniqueIndex()
     val lastPlayed = datetime("last_played")
 }
 
@@ -72,10 +72,9 @@ class Album(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Album>(Albums)
 
     var name by Albums.name
-    var disc by Albums.disc
-    var discTotal by Albums.discTotal
     var artPath by Albums.artPath
     var artist by Artist referencedOn Albums.artist
+    var artistId by Albums.artist
     var artistName by Albums.artistName
     var lastPlayed by Albums.lastPlayed
     override fun toString(): String {
@@ -90,10 +89,12 @@ class Track(id: EntityID<Int>) : IntEntity(id) {
     var artPath by Tracks.artPath
     var filePath by Tracks.filePath
     var album by Album referencedOn Tracks.album
+    var albumId by Tracks.album
     var albumName by Tracks.albumName
     var artistName by Tracks.artistName
     var lastPlayed by Tracks.lastPlayed
     var number by Tracks.number
+    var discNumber by Tracks.discNumber
     override fun toString(): String {
         return "Track($name in $album)"
     }
@@ -121,6 +122,7 @@ class PlaylistTrack(id: EntityID<Int>) : IntEntity(id) {
 }
 
 fun initDb() {
+    SchemaUtils.create(Artists, Albums, Tracks, Playlists, PlaylistTracks)
 //    transaction {
 //        MigrationUtils.statementsRequiredForDatabaseMigration(
 //            Artists,

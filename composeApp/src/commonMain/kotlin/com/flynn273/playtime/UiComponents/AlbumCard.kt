@@ -10,10 +10,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.em
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.flynn273.playtime.Database.Album
+import com.flynn273.playtime.FontSizes
 import com.flynn273.playtime.Navigation.AlbumRoute
 import com.flynn273.playtime.Padding
 import com.flynn273.playtime.Sizes
@@ -35,7 +35,7 @@ fun AlbumCard(album: Album, nc: NavHostController) {
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
             fontWeight = FontWeight.Bold,
-            fontSize = 1.25.em,
+            fontSize = FontSizes.medium,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center
         )

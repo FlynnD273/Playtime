@@ -4,24 +4,26 @@ import com.flynn273.playtime.Database.*
 import com.flynn273.playtime.Utils.*
 import com.flynnd273.playtime.logger
 import io.github.vinceglb.filekit.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
 import org.jetbrains.exposed.v1.jdbc.Database
-import org.jetbrains.exposed.v1.jdbc.deleteAll
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import playtime.composeapp.generated.resources.Res
 import java.security.MessageDigest
+import java.util.Collections.emptyList
 import kotlin.time.Clock
 
 private const val TOP = 20
 
-data class AlbumResult(val artist: Artist, val album: Album, val tracks: List<Track>)
+data class AlbumResult(val artist: Artist, val album: Album, val discs: List<List<Track>>)
 
 class Library(val scope: CoroutineScope) {
     private val _topTracks = MutableStateFlow<List<Track>>(emptyList())
@@ -45,10 +47,6 @@ class Library(val scope: CoroutineScope) {
     val albumArtCache = getImageCache()
     val libraryState = LibraryState(scope)
 
-    init {
-        scope.launch { initDb() }
-    }
-
     fun refreshAll() {
         scope.launch {
             suspendTransaction {
@@ -71,11 +69,20 @@ class Library(val scope: CoroutineScope) {
             album = Album.findById(albumId)
             if (album != null) {
                 artist = album!!.artist
-                tracks = Track.find { Tracks.album eq albumId }.sortedBy { it.number }
+                tracks = Track.find { Tracks.album eq albumId }
+                    .orderBy(Tracks.discNumber to SortOrder.ASC, Tracks.number to SortOrder.ASC).toList()
             }
         }
         if (artist != null) {
-            return AlbumResult(artist, album!!, tracks)
+            val discs = mutableListOf<MutableList<Track>>()
+            for (track in tracks) {
+                if (discs.isEmpty() || discs[discs.size - 1][0].discNumber != track.discNumber) {
+                    discs.add(mutableListOf(track))
+                } else {
+                    discs[discs.size - 1].add(track)
+                }
+            }
+            return AlbumResult(artist, album!!, discs)
         }
         return null
     }
@@ -104,31 +111,52 @@ class Library(val scope: CoroutineScope) {
     }
 
     suspend fun indexLibrary(paths: List<PlatformFile>) {
+        transaction {
+            initDb()
+        }
         logger.debug { "Indexing library... $paths" }
         val hash = hashLibrary(paths)
         if (libraryState.state.value.libraryHash != hash) {
-            libraryState.setLibraryHash(hash)
-            coroutineScope { albumArtCache.list().map { async { it.delete() } }.awaitAll() }
+//            coroutineScope { albumArtCache.list().map { async { it.delete() } }.awaitAll() }
             suspendTransaction {
-                // TODO: Don't delete everything lol
-                Tracks.deleteAll()
-                Albums.deleteAll()
-                Artists.deleteAll()
+                val leftoverTracks =
+                    Track.all().map { "${it.artistName}${it.albumName}${it.name}" }.toMutableSet()
                 for (path in paths) {
-                    indexSingleFolder(path)
+                    indexSingleFolder(path, leftoverTracks)
                 }
+                val tracks = mutableListOf<Int>()
+                val albums = mutableSetOf<Int>()
+                val artists = mutableSetOf<Int>()
+                Track.find { Tracks.artistName + Tracks.albumName + Tracks.name inList leftoverTracks }.forEach {
+                    albums.add(it.album.id.value)
+                    artists.add(it.album.artist.id.value)
+                    tracks.add(it.id.value)
+                }
+                logger.debug { albums }
+                Tracks.deleteWhere { (Tracks.id inList tracks) }
+                Album.find { Albums.id inList albums }.forEach { album ->
+                    if (Track.find { Tracks.album eq album.id.value }.empty()) {
+                        album.delete()
+                    }
+                }
+                Artist.find { Artists.id inList artists }.forEach { artist ->
+                    if (Album.find { Albums.artist eq artist.id.value }.empty()) {
+                        artist.delete()
+                    }
+                }
+                libraryState.setLibraryHash(hash)
             }
         }
         refreshAll()
         logger.debug { "Finished indexing!" }
     }
 
-    private fun indexSingleFolder(file: PlatformFile) {
+    private fun indexSingleFolder(file: PlatformFile, leftoverTracks: MutableSet<String>) {
         if (file.isDirectory()) {
             if (file.name[0] == '.') {
                 return
             }
-            file.list().forEach { indexSingleFolder(it) }
+            file.list().forEach { indexSingleFolder(it, leftoverTracks) }
         } else {
             if (supportedExtensions.contains(file.extension)) {
                 val metadata = getMetadata(file)
@@ -143,8 +171,6 @@ class Library(val scope: CoroutineScope) {
                     Album.find { Albums.name eq metadata.album and (Albums.artist eq artistRow.id) }.firstOrNull()
                         ?: Album.new {
                             name = metadata.album
-                            disc = metadata.discNum
-                            discTotal = metadata.discTotal
                             artPath = coverImage.path
                             artist = artistRow
                             artistName = artistRow.name
@@ -155,12 +181,14 @@ class Library(val scope: CoroutineScope) {
                         name = metadata.track
                         artPath = coverImage.path
                         filePath = file.path
+                        discNumber = metadata.discNum ?: 1
                         album = albumRow
                         number = metadata.trackNum
                         albumName = albumRow.name
                         artistName = artistRow.name
                         lastPlayed = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                     }
+                    leftoverTracks -= "${metadata.artist}${metadata.album}${metadata.track}"
                 } catch (e: ExposedSQLException) {
                     logger.debug { "Error adding song: ${metadata.file.path}, $e" }
                 }

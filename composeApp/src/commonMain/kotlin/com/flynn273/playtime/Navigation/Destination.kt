@@ -12,7 +12,7 @@ import com.flynnd273.playtime.SharedViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TrackRoute(val id: Int)
+data class TrackRoute(val albumId: Int, val trackId: Int)
 
 @Serializable
 data class AlbumRoute(val id: Int)

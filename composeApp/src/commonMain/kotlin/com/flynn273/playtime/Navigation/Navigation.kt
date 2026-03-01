@@ -39,5 +39,9 @@ fun AppNavController(
             val route: AlbumRoute = it.toRoute()
             AlbumScreen(viewModel, navController, route.id)
         }
+        composable<TrackRoute> {
+            val route: TrackRoute = it.toRoute()
+            AlbumScreen(viewModel, navController, route.albumId, route.trackId)
+        }
     }
 }
