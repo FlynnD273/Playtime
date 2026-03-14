@@ -1,6 +1,5 @@
 package com.flynn273.playtime.Database
 
-import kotlinx.datetime.LocalDateTime
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.dao.id.IntIdTable
 import org.jetbrains.exposed.v1.dao.IntEntity
@@ -8,30 +7,30 @@ import org.jetbrains.exposed.v1.dao.IntEntityClass
 import org.jetbrains.exposed.v1.datetime.datetime
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 
-object Artists : IntIdTable("artists") {
+open class ArtistsTable(name: String) : IntIdTable(name) {
     val name = varchar("name", 1024).uniqueIndex()
     val artPath = varchar("artPath", 1024)
     val lastPlayed = datetime("last_played")
 }
 
-object Albums : IntIdTable("albums") {
+object Artists : ArtistsTable("artists")
+
+open class AlbumsTable(name: String, artistsTable: ArtistsTable) : IntIdTable(name) {
     val name = varchar("name", 1024).index()
     val artPath = varchar("artPath", 1024)
-    val artist = reference("artist", Artists.id)
+    val artist = reference("artist", artistsTable.id).index()
     val artistName = varchar("artist_name", 1024)
 
     val lastPlayed = datetime("last_played")
-
-    init {
-        uniqueIndex(name, artist)
-    }
 }
 
-object Tracks : IntIdTable("tracks") {
+object Albums : AlbumsTable("albums", Artists)
+
+open class TracksTabls(name: String, albumsTable: AlbumsTable) : IntIdTable(name) {
     val name = varchar("name", 1024).index()
     val artPath = varchar("art_path", 1024)
     val filePath = varchar("file_path", 1024)
-    val album = reference("album", Albums.id)
+    val album = reference("album", albumsTable.id).index()
     val albumName = varchar("album_name", 1024)
     val artistName = varchar("artist_name", 1024)
     val number = integer("number")
@@ -40,22 +39,22 @@ object Tracks : IntIdTable("tracks") {
     val lastPlayed = datetime("last_played")
 }
 
-object Playlists : IntIdTable("playlists") {
+object Tracks : TracksTabls("tracks", Albums)
+
+open class PlaylistsTable(name: String) : IntIdTable(name) {
     val name = varchar("name", 128).uniqueIndex()
     val path = varchar("path", 1024).uniqueIndex()
     val lastPlayed = datetime("last_played")
 }
 
-object PlaylistTracks : IntIdTable("playlist_tracks") {
+object Playlists : PlaylistsTable("playlists")
+
+open class PlaylistTracksTabls(name: String) : IntIdTable(name) {
     val playlist = reference("playlist", Playlists.id)
     val track = reference("track", Tracks.id)
 }
 
-data class StaticArtist(val name: String, val lastPlayed: LocalDateTime) {
-    override fun toString(): String {
-        return "Artist($name)"
-    }
-}
+object PlaylistTracks : PlaylistTracksTabls("playlist_tracks")
 
 class Artist(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Artist>(Artists)
@@ -67,6 +66,7 @@ class Artist(id: EntityID<Int>) : IntEntity(id) {
         return "Artist($name)"
     }
 }
+
 
 class Album(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Album>(Albums)
@@ -121,8 +121,19 @@ class PlaylistTrack(id: EntityID<Int>) : IntEntity(id) {
     }
 }
 
+object Filepaths : IntIdTable("filepaths") {
+    val filePath = varchar("file_path", 1024)
+}
+
+class Filepath(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<Filepath>(Filepaths)
+
+    var filepath by Filepaths.filePath
+}
+
+
 fun initDb() {
-    SchemaUtils.create(Artists, Albums, Tracks, Playlists, PlaylistTracks)
+    SchemaUtils.create(Artists, Albums, Tracks, Playlists, PlaylistTracks, Filepaths)
 //    transaction {
 //        MigrationUtils.statementsRequiredForDatabaseMigration(
 //            Artists,

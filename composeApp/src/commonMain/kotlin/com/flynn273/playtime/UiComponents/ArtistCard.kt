@@ -1,5 +1,6 @@
 package com.flynn273.playtime.UiComponents
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
@@ -13,12 +14,17 @@ import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
 import com.flynn273.playtime.Database.Artist
 import com.flynn273.playtime.FontSizes
+import com.flynn273.playtime.Navigation.ArtistRoute
 import com.flynn273.playtime.Padding
 import com.flynn273.playtime.Sizes
 
 @Composable
 fun ArtistCard(artist: Artist, nc: NavHostController) {
-    Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding)) {
+    Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding).clickable(onClick = {
+        nc.navigate(
+            ArtistRoute(artist.id.value)
+        )
+    })) {
         AsyncImage(
             model = artist.artPath,
             contentDescription = artist.name,
