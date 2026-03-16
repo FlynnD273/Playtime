@@ -10,6 +10,11 @@ plugins {
     kotlin("plugin.serialization") version "2.3.10"
 }
 
+repositories {
+    mavenCentral()
+    google()
+}
+
 kotlin {
     androidTarget {
         compilerOptions {
@@ -25,6 +30,9 @@ kotlin {
             implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
+            // Audio
+            implementation(libs.jaudiotagger)
+
             // Persistent data
             implementation(libs.exposed.core)
             implementation(libs.exposed.dao)
@@ -69,7 +77,8 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-            implementation(libs.jaudiotagger)
+
+            implementation("uk.co.caprica:vlcj:4.11.0")
         }
     }
 }
