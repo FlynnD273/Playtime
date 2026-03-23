@@ -23,7 +23,7 @@ fun TrackItem(viewModel: SharedViewModel, track: Track, nc: NavHostController, s
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Padding.LargePadding, vertical = Padding.MediumPadding)
-            .clickable(onClick = { viewModel.playState.addToQueue(listOf(track)) }),
+            .clickable(onClick = { viewModel.nowPlaying.play(track) }),
         leadingContent = {
             if (showImage) {
                 AsyncImage(

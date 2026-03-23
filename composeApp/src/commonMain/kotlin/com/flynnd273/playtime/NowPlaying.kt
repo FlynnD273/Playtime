@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 enum class RepeatMode {
     None,
     All,
-    Single,
+    One,
 }
 
 enum class ShuffleMode {
@@ -19,8 +19,8 @@ enum class ShuffleMode {
     Normal,
 }
 
-class PlayState(scope: CoroutineScope) {
-    val player = AudioPlayer(scope)
+class NowPlaying(scope: CoroutineScope) {
+    private val player = AudioPlayer(scope, { skipNext() })
     private val _currPlaying = MutableStateFlow<Track?>(null)
     val currPlaying = _currPlaying.asStateFlow()
 
@@ -54,6 +54,26 @@ class PlayState(scope: CoroutineScope) {
 
     }
 
+    fun nextShuffleMode() {
+        _shuffleMode.value = ShuffleMode.entries[(shuffleMode.value.ordinal + 1) % ShuffleMode.entries.size]
+    }
+
+    fun nextRepeatMode() {
+        _repeatMode.value = RepeatMode.entries[(repeatMode.value.ordinal + 1) % RepeatMode.entries.size]
+    }
+
+    val playerState = player.state
+    fun play() = player.play()
+
+    fun play(track: Track) {
+        _playNext.value = listOf(track) + playNext.value
+        skipNext()
+    }
+
+    fun pause() = player.pause()
+    fun togglePlaying() = player.togglePlaying()
+    fun seekTo(positionMs: Long) = player.seekTo(positionMs)
+
     fun skipNext() {
         if (playNext.value.isNotEmpty()) {
             _currPlaying.value = playNext.value[0]
@@ -69,14 +89,17 @@ class PlayState(scope: CoroutineScope) {
     }
 
     fun skipPrev() {
-        if ((player.state.value.currentPositionMs ?: 0) > 5000) {
+        if ((player.state.value.currentPositionMs) > 5000) {
             player.seekTo(0)
             player.play()
-        } else {
+        } else if (queueIndex.value > 0) {
             _queueIndex.value--
-            if (queueIndex.value >= 0 && queueIndex.value < queue.value.size) {
+            if (queueIndex.value < queue.value.size) {
                 _currPlaying.value = queue.value[queueIndex.value]
             }
+        } else {
+            player.seekTo(0)
+            player.play()
         }
     }
 

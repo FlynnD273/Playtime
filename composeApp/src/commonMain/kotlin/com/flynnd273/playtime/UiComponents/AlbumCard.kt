@@ -20,31 +20,31 @@ import com.flynnd273.playtime.Sizes
 
 @Composable
 fun AlbumCard(album: Album, nc: NavHostController) {
-	Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding).clickable(onClick = {
-		nc.navigate(
-			AlbumRoute(album.id.value)
-		)
-	})) {
-		AsyncImage(
-			model = album.artPath,
-			contentDescription = album.name,
-			modifier = Modifier.aspectRatio(1f).fillMaxWidth().clip(CardDefaults.shape)
-		)
-		Text(
-			album.name,
-			overflow = TextOverflow.Ellipsis,
-			maxLines = 1,
-			fontWeight = FontWeight.Bold,
-			fontSize = FontSizes.medium,
-			modifier = Modifier.fillMaxWidth(),
-			textAlign = TextAlign.Center
-		)
-		Text(
-			album.artistName,
-			overflow = TextOverflow.Ellipsis,
-			maxLines = 1,
-			modifier = Modifier.fillMaxWidth(),
-			textAlign = TextAlign.Center
-		)
-	}
+    Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding).clickable(onClick = {
+        nc.navigate(
+            AlbumRoute(album.id.value)
+        )
+    })) {
+        AsyncImage(
+            model = album.artPath,
+            contentDescription = album.name,
+            modifier = Modifier.aspectRatio(1f).fillMaxWidth().clip(CardDefaults.shape)
+        )
+        Text(
+            album.name,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            fontWeight = FontWeight.Bold,
+            fontSize = FontSizes.Medium,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+        Text(
+            album.artistName,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+    }
 }

@@ -54,7 +54,7 @@ fun AlbumScreen(viewModel: SharedViewModel, nc: NavHostController, albumId: Int,
                         item {
                             Text(
                                 "Disc ${it[0].discNumber}",
-                                fontSize = FontSizes.header,
+                                fontSize = FontSizes.Header,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth().padding(vertical = Padding.LargePadding)
                             )

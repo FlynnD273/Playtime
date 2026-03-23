@@ -21,7 +21,7 @@ val logger = KotlinLogging.logger {}
 class SharedViewModel() : ViewModel() {
     val config = Config(viewModelScope)
     val library = Library(viewModelScope)
-    val playState = PlayState(viewModelScope)
+    val nowPlaying = NowPlaying(viewModelScope)
 
     init {
         viewModelScope.launch {

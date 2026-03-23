@@ -18,31 +18,31 @@ import com.flynnd273.playtime.Sizes
 
 @Composable
 fun TrackCard(track: Track, nc: NavHostController) {
-	Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding).clickable(onClick = {
-		nc.navigate(
-			TrackRoute(track.albumId.value, track.id.value)
-		)
-	})) {
-		AsyncImage(
-			model = track.artPath,
-			contentDescription = track.name,
-			modifier = Modifier.aspectRatio(1f).fillMaxWidth()
-		)
-		Text(
-			track.name,
-			overflow = TextOverflow.Ellipsis,
-			maxLines = 1,
-			fontWeight = FontWeight.Bold,
-			fontSize = FontSizes.medium,
-			modifier = Modifier.fillMaxWidth(),
-			textAlign = TextAlign.Center
-		)
-		Text(
-			track.artistName,
-			overflow = TextOverflow.Ellipsis,
-			maxLines = 1,
-			modifier = Modifier.fillMaxWidth(),
-			textAlign = TextAlign.Center
-		)
-	}
+    Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding).clickable(onClick = {
+        nc.navigate(
+            TrackRoute(track.albumId.value, track.id.value)
+        )
+    })) {
+        AsyncImage(
+            model = track.artPath,
+            contentDescription = track.name,
+            modifier = Modifier.aspectRatio(1f).fillMaxWidth()
+        )
+        Text(
+            track.name,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            fontWeight = FontWeight.Bold,
+            fontSize = FontSizes.Medium,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+        Text(
+            track.artistName,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+    }
 }

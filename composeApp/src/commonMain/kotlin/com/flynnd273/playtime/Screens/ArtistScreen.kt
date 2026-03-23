@@ -21,55 +21,55 @@ import com.flynnd273.playtime.Database.Album
 import com.flynnd273.playtime.FontSizes
 import com.flynnd273.playtime.Navigation.AlbumRoute
 import com.flynnd273.playtime.Padding
+import com.flynnd273.playtime.SharedViewModel
 import com.flynnd273.playtime.Sizes
 import com.flynnd273.playtime.UiComponents.PlatformScrollBar
-import com.flynnd273.playtime.SharedViewModel
 
 @Composable
 fun ArtistScreen(viewModel: SharedViewModel, nc: NavHostController, artistId: Int) {
-	val result = viewModel.library.getArtist(artistId)
-	Scaffold(topBar = {
-		Column {
-			Text("Artist")
-			Text(result.artist?.name ?: "No album fount")
-		}
-	}) {
-		Box(modifier = Modifier.padding(it)) {
-			val scrollState = rememberLazyGridState()
-			LazyVerticalGrid(
-				modifier = Modifier,
-				columns = GridCells.Adaptive(Sizes.LargeImage),
-				state = scrollState,
-			) {
-				items(result.albums) {
-					AlbumItem(it, nc)
-				}
-			}
-			PlatformScrollBar(gridState = scrollState)
-		}
-	}
+    val result = viewModel.library.getArtist(artistId)
+    Scaffold(topBar = {
+        Column {
+            Text("Artist")
+            Text(result.artist?.name ?: "No album fount")
+        }
+    }) {
+        Box(modifier = Modifier.padding(it)) {
+            val scrollState = rememberLazyGridState()
+            LazyVerticalGrid(
+                modifier = Modifier,
+                columns = GridCells.Adaptive(Sizes.LargeImage),
+                state = scrollState,
+            ) {
+                items(result.albums) {
+                    AlbumItem(it, nc)
+                }
+            }
+            PlatformScrollBar(gridState = scrollState)
+        }
+    }
 }
 
 @Composable
 fun AlbumItem(album: Album, nc: NavHostController) {
-	Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding).clickable(onClick = {
-		nc.navigate(
-			AlbumRoute(album.id.value)
-		)
-	})) {
-		AsyncImage(
-			model = album.artPath,
-			contentDescription = album.name,
-			modifier = Modifier.aspectRatio(1f).fillMaxWidth().clip(CardDefaults.shape)
-		)
-		Text(
-			album.name,
-			overflow = TextOverflow.Ellipsis,
-			maxLines = 1,
-			fontWeight = FontWeight.Bold,
-			fontSize = FontSizes.medium,
-			modifier = Modifier.fillMaxWidth(),
-			textAlign = TextAlign.Center
-		)
-	}
+    Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding).clickable(onClick = {
+        nc.navigate(
+            AlbumRoute(album.id.value)
+        )
+    })) {
+        AsyncImage(
+            model = album.artPath,
+            contentDescription = album.name,
+            modifier = Modifier.aspectRatio(1f).fillMaxWidth().clip(CardDefaults.shape)
+        )
+        Text(
+            album.name,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            fontWeight = FontWeight.Bold,
+            fontSize = FontSizes.Medium,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+    }
 }

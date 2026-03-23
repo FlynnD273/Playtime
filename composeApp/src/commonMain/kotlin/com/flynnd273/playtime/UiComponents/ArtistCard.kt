@@ -20,24 +20,24 @@ import com.flynnd273.playtime.Sizes
 
 @Composable
 fun ArtistCard(artist: Artist, nc: NavHostController) {
-	Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding).clickable(onClick = {
-		nc.navigate(
-			ArtistRoute(artist.id.value)
-		)
-	})) {
-		AsyncImage(
-			model = artist.artPath,
-			contentDescription = artist.name,
-			modifier = Modifier.aspectRatio(1f).fillMaxWidth().clip(CircleShape)
-		)
-		Text(
-			artist.name,
-			overflow = TextOverflow.Ellipsis,
-			maxLines = 1,
-			fontWeight = FontWeight.Bold,
-			fontSize = FontSizes.medium,
-			modifier = Modifier.fillMaxWidth(),
-			textAlign = TextAlign.Center
-		)
-	}
+    Column(modifier = Modifier.width(Sizes.Image).padding(Padding.MediumPadding).clickable(onClick = {
+        nc.navigate(
+            ArtistRoute(artist.id.value)
+        )
+    })) {
+        AsyncImage(
+            model = artist.artPath,
+            contentDescription = artist.name,
+            modifier = Modifier.aspectRatio(1f).fillMaxWidth().clip(CircleShape)
+        )
+        Text(
+            artist.name,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            fontWeight = FontWeight.Bold,
+            fontSize = FontSizes.Medium,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+    }
 }
